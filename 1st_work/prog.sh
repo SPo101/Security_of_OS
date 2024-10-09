@@ -2,12 +2,12 @@
 
 func_for_users () {
 	echo $'\t\tList of all users'
-	awk -F: 'NR>10 { printf "User - %-15s \t home dir - %s\n", $1, $6}' /etc/passwd | sort
+	awk -F: '{ printf "User - %-15s \t home dir - %s\n", $1, $6}' /etc/passwd | grep -v # |sort
 	return 
 }
 func_for_processes () {
-#for processes ps command
-	echo processes
+	echo $'\t\tList of all processes'
+	ps -A | grep -v PID | awk '{printf "PID - %-7%s \t CMD - %s\n",$1, $4}' | sort -n
 	return 
 }
 func_for_help () {
