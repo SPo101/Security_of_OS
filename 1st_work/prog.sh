@@ -2,7 +2,7 @@
 
 func_for_users () {
 	echo $'\t\tList of all users'
-	awk -F: '{ printf "User - %-15s \t home dir - %s\n", $1, $6}' /etc/passwd | grep -v # |sort
+	awk -F: '{ printf "User - %-15s \t home dir - %s\n", $1, $6}' /etc/passwd | sort | grep -v "User - #"
 	return 
 }
 func_for_processes () {
