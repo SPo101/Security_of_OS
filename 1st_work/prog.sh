@@ -1,7 +1,7 @@
 #! /bin/bash
 
 func_for_users () {
-	echo "List of all users"
+	echo $'\t\tList of all users'
 	awk -F: 'NR>10 { printf "User - %-15s \t home dir - %s\n", $1, $6}' /etc/passwd | sort
 	return 
 }
@@ -11,6 +11,11 @@ func_for_processes () {
 	return 
 }
 func_for_help () {
+	echo "Usage: $0 [arguments] [file]"
+	echo $'\nArguments:'
+	echo $'-h --help\t\tShow instructions of how to use program'
+	echo $'-u --users\t\tShow all users and their home dirrectory'
+	echo $'-p --processes\t\tShow all processes running at the moment'
 	return 
 }
 func_for_logintofile () {
