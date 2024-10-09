@@ -1,10 +1,13 @@
 #! /bin/bash
 
 func_for_users () {
+	echo "List of all users"
+	awk -F: 'NR>10 { printf "User - %-15s \t home dir - %s\n", $1, $6}' /etc/passwd | sort
 	return 
 }
 func_for_processes () {
 #for processes ps command
+	echo processes
 	return 
 }
 func_for_help () {
@@ -17,16 +20,15 @@ func_for_errintofile () {
 	return 
 }
 
-#getopt/getopts обрaботка командной строки
 #программа должна проверять доступ к пути и выводить соответствующие сообщения об ошибках
 #программа должна фильтровать или обрабатывать выводы используемых команд в stderr
 
 
 while getopts ":uph-:" option; do
 case ${option} in
-	u) func_for_users
+	u) func_for_users $OPTARG
 	;;
-	p) func_for_processes
+	p) func_for_processes $OPTARG
 	;;
 	h) func_for_help
 		exit 0
