@@ -2,22 +2,24 @@
 
 
 func_for_users () {
-	if [ "$1" == "" ]; then
+	if [ "$1" != "" ]; then
+	    awk -F: '{ printf "User - %-15s \t home dir - %s\n", $1, $6}' /etc/passwd | sort | grep -v "User - #" > "$1"
+	elif [ "$2" != "" ]; then
+	    awk -F: '{ printf "User - %-15s \t home dir - %s\n", $1, $6}' /etc/passwd | sort | grep -v "User - #" 2> "$1"
+	else
 	    echo $'\t\tList of all users'
 	    awk -F: '{ printf "User - %-15s \t home dir - %s\n", $1, $6}' /etc/passwd | sort | grep -v "User - #"
-	else
-	    echo $'\t\tList of all users' > "$1"
-	    awk -F: '{ printf "User - %-15s \t home dir - %s\n", $1, $6}' /etc/passwd | sort | grep -v "User - #" >> "$1"
 	fi
 }
 
 func_for_processes () {
-	if [ "$1" == "" ]; then
-	    echo $'\t\tList of all processes'
-	    ps -A | grep -v PID | awk '{printf "PID - %-7%s \t CMD - %s\n",$1, $4}' | sort -n
+	if [ "$1" != "" ]; then
+	    ps -A | sort -n | grep -v TTY | awk '{printf "PID - %-7%s \t CMD - %s\n",$1, $4}'  > "$1"
+	elif [ "$2" != "" ]; then
+	    ps -A | sort -n | grep -v TTY | awk '{printf "PID - %-7%s \t CMD - %s\n",$1, $4}'  2> "$1"
 	else
-	    echo $'\t\tList of all processes' > "$1"
-	    ps -A | grep -v PID | awk '{printf "PID - %-7%s \t CMD - %s\n",$1, $4}' | sort -n >> "$1"
+	    echo $'\t\tList of all processes'
+	    ps -A | sort -n | grep -v TTY | awk '{printf "PID - %-7%s \t CMD - %s\n",$1, $4}' 
 	fi
 }
 
@@ -28,7 +30,12 @@ func_for_help () {
 	echo $'-u --users\t\tShow all users and their home dirrectory'
 	echo $'-p --processes\t\tShow all processes running at the moment\n'
 	echo $'-l --log [PATH]\t\tLogs all output into file on the PATH'
+	echo $'-e --errors [PATH]\tLogs all errors into file on the PATH'
 	return 
+}
+
+func_for_canwriteinfile () {
+	[ -w "$1" ] && canwrite=1 || canwrite=0
 }
 
 usr=0
@@ -55,6 +62,12 @@ while getopts "$args" options; do
                 log=*)
                     log_file=${OPTARG#*=}
                     ;;
+                errors)
+		    err_file="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                    ;;
+                errors=*)
+                    err_file=${OPTARG#*=}
+                    ;;
                 *)
 	    	    echo "Wrong option"
 		    func_for_help
@@ -75,6 +88,9 @@ while getopts "$args" options; do
 	l)
 	    log_file="${OPTARG}"
 	    ;;
+	e)
+	    err_file="${OPTARG}"
+	    ;;
         *)
 	    echo "Wrong option"
 	    func_for_help
@@ -83,12 +99,29 @@ while getopts "$args" options; do
     esac
 done
 
-#make a check of file
-if [ log_file == "" ]; then
-	if [ $usr == 1 ]; then func_for_users; fi
-	if [ $proc == 1 ]; then func_for_processes; fi
-else
-	if [ $usr == 1 ]; then func_for_users "${log_file}"; fi
-	if [ $proc == 1 ]; then func_for_processes "${log_file}"; fi
+if [ "$log_file" != "" ]; then
+	func_for_canwriteinfile $log_file
+	if [ $canwrite == 0 ]; then
+	    echo "Can't log in file, few priviledges"
+	    exit 1
+	fi
+	if [ $usr == 1 ]; then func_for_users "${log_file}" ""; fi
+	if [ $proc == 1 ]; then func_for_processes "${log_file}" ""; fi
+fi
+if [ "$err_file" != "" ]; then
+	func_for_canwriteinfile $err_file
+	if [ $canwrite == 0 ]; then
+	    echo "Can't write err in file, few priviledges"
+	    exit 1
+	fi
+	if [ $usr == 1 ]; then func_for_users "" "${err_file}"; fi
+	if [ $proc == 1 ]; then func_for_processes "" "${err_file}"; fi
+fi
+#if [ "$log_file" == ""] && ["$err_file" == ""]; then
+if [ "$log_file" == "" ]; then
+	if [ "$err_file" == "" ]; then
+		if [ $usr == 1 ]; then func_for_users; fi
+		if [ $proc == 1 ]; then func_for_processes; fi
+	fi
 fi
 
