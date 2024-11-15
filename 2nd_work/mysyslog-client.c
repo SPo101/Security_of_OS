@@ -18,7 +18,7 @@ int mysyslog(const char* msg, int level, int driver, int format, const char* pat
 
 
 #define CNT_OPTIONS 5
-#define LIBRARY "mysyslog.so"
+#define LIBRARY "libmysyslog.so"
 
 static struct option Long_options[] = {
 	{"message", 	required_argument, 0, 0},
@@ -27,20 +27,28 @@ static struct option Long_options[] = {
 	{"format", 	required_argument, 0, 0},
 	{"path", 	required_argument, 0, 0}
 };
+static char *Short_options = "m:l:d:f:p:";	//msg | lvl | driv | form | path
 
-char *args[CNT_OPTIONS]; 
+void reminder(char *opts){
+	printf("help - %s\n", opts);
+	printf("msg | lvl | driv | form | path\n\n\n");
+}	
 	
-	
+int check_args(char **args){
+	for(int i=0; i<CNT_OPTIONS; i++)
+		if(*(args+i) == NULL)
+			return -1;
+	return 0;
+}
 
 int main(int argc, char *argv[]){
 	int Option = 0; 
 	int Option_index = 0;
-	static char *Short_options = "m:l:d:f:p:";	//msg | lvl | driv | form | path
+	char *args[CNT_OPTIONS]; 
 	void *library;
 	void (*mysyslog)(const char*, int, int, int, const char*);
 
-	printf("help - %s\n", Short_options);
-	printf("msg | lvl | driv | form | path\n\n\n");
+	reminder(Short_options);
 
 	while(1){
 		Option = getopt_long(argc, argv, Short_options, Long_options, &Option_index);
@@ -71,6 +79,10 @@ int main(int argc, char *argv[]){
 		}
 	}
 
+	if(check_args(args) == -1){
+		fprintf(stderr, "Not all parameters were given");
+		exit(EXIT_FAILURE);
+	}
 	for(int i=0; i<CNT_OPTIONS; i++){
 		printf("Args - %s\n", args[i]);
 	}	
