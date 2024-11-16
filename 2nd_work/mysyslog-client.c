@@ -19,6 +19,7 @@ int mysyslog(const char* msg, int level, int driver, int format, const char* pat
 
 #define CNT_OPTIONS 5
 #define LIBRARY "libmysyslog.so"
+#define LOG_FUNC "mysyslog"
 
 static struct option Long_options[] = {
 	{"message", 	required_argument, 0, 0},
@@ -93,6 +94,15 @@ int main(int argc, char *argv[]){
 		exit(EXIT_FAILURE);
 	}
 	dlerror();
+
+	mysyslog = dlsym(library, LOG_FUNC);
+	if(mysyslog == NULL){
+		fprintf(stderr, "%s\n", dlerror());
+		exit(EXIT_FAILURE);
+	}
+	dlerror();
+
+	mysyslog(args[0], *(int*) args[1], *(int*) args[2], *(int*) args[3], args[4]);
 
 	if(dlclose(library) != 0){
 		fprintf(stderr, "%s\n", dlerror());
