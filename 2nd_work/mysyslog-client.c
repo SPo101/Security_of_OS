@@ -84,9 +84,6 @@ int main(int argc, char *argv[]){
 		fprintf(stderr, "Not all parameters were given");
 		exit(EXIT_FAILURE);
 	}
-	for(int i=0; i<CNT_OPTIONS; i++){
-		printf("Args - %s\n", args[i]);
-	}	
 	
 	library = dlopen(LIBRARY, RTLD_LAZY | RTLD_GLOBAL);
 	if(library == NULL){
