@@ -34,6 +34,16 @@ void reminder(char *opts){
 	printf("help - %s\n", opts);
 	printf("msg | lvl | driv | form | path\n\n\n");
 }	
+
+void Usage(){
+	printf("Usage\n");
+	printf("\tuse all of options:\n");
+	printf("-m --message Message to log\n");
+	printf("-l --level   Level of importance\n");
+	printf("-d --driver  \n");
+	printf("-f --format  \n");
+	printf("-p --path    \n");
+}
 	
 int check_args(char **args){
 	for(int i=0; i<CNT_OPTIONS; i++)
@@ -43,13 +53,15 @@ int check_args(char **args){
 }
 
 int main(int argc, char *argv[]){
+	
+	if(argc < 2)
+		Usage();
+
 	int Option = 0; 
 	int Option_index = 0;
 	char *args[CNT_OPTIONS]; 
 	void *library;
 	void (*mysyslog)(const char*, int, int, int, const char*);
-
-	reminder(Short_options);
 
 	while(1){
 		Option = getopt_long(argc, argv, Short_options, Long_options, &Option_index);
@@ -81,7 +93,7 @@ int main(int argc, char *argv[]){
 	}
 
 	if(check_args(args) == -1){
-		fprintf(stderr, "Not all parameters were given");
+		fprintf(stderr, "Not all parameters were given\n");
 		exit(EXIT_FAILURE);
 	}
 	
