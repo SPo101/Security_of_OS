@@ -30,11 +30,6 @@ static struct option Long_options[] = {
 };
 static char *Short_options = "m:l:d:f:p:";	//msg | lvl | driv | form | path
 
-void reminder(char *opts){
-	printf("help - %s\n", opts);
-	printf("msg | lvl | driv | form | path\n\n\n");
-}	
-
 void Usage(){
 	printf("Usage\n");
 	printf("\tuse all of options:\n");

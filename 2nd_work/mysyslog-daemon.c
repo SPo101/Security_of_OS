@@ -1,63 +1,86 @@
+/*
+Сделать тестовое приложение демон mysyslog-daemon, 
+который автоматически запускается во время старта компьютера 
+и постоянно выводит в лог данные с разным уровнем. 
+Приложение настраивается при помощи конфигурационного файла /etc/mysyslog/mysyslog.cfg. 
+В конфигурационном файле задается: путь, формат и драйвер. 
+Демон должен корректно обрабатывать получаемые сигналы 
+и должен запускаться и останавливаться через systemctl.
+
+int mysyslog(const char* msg, int level, int driver, int format, const char* path);
+
+
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
-#include <errno.h>
+#include <dlfcn.h>
+#include <stddef.h>
 
-static int dem;
-static int flag;
 
-static struct option Long_options[] = {
-	/*These opts set a flag. */
-	{"demonize", 	no_argument, &dem,  1},
-	{"flag_on", 	no_argument, &flag, 1},
-	{"flag_off", 	no_argument, &flag, 0},
-	
-	/* These opts doesn't set a flag. */
-	{"error", 	no_argument, 	   0, 'e'},
-	{"file", 	required_argument, 0, 'f'},
-	{"descriptor",  required_argument, 0, 'd'}
-};
-
+#define LIBRARY "libmysyslog.so"
+#define LOG_FUNC "mysyslog"
+#define CONFIG "/etc/mysyslog/mysyslog.cfg"
 
 	
-	
+void daemonize(){
+	pid_t pid = fork();
 
-int main(int argc, char *argv[]){
-	int Option = 0; 
-	int Option_index = 0;
-	char Short_options[16] = "d:ef:";	//demonize | error | file
+	if( pid > 0)// parent process
+		exit(EXIT_SUCCESS);
 
-	while(1){
-		Option = getopt_long(argc, argv, Short_options, Long_options, &Option_index);
-		if(Option == -1)
-			break;
-		
-		switch(Option){
-			/* If opt has flag. */
-			case '0':
-				if(Long_options[Option_index].flag != 0)
-					break;
-				printf("Option %s", Long_options[Option_index].name);
-				if(optarg)
-					printf(" with args %s", optarg);
-				printf("\n");
-				break;
-			/* If opt has NOT flag. */
-			case 'e':
-				printf("Option e without args\n");
-				break;
-			case 'd':
-				printf("Option f with args %s\n", optarg);
-				break;
-			case 'f':
-				printf("Option f with args %s\n", optarg);
-				break;
-			case '?':
-				break;
-		}
+	if(setsid() == -1){
+		printf("error");
+		exit(EXIT_FAILURE);
 	}
 
-	printf("Flags:\n");
-	printf("Demonize - %d\n", dem);
-	printf("Flag - %d\n", flag);
+	pid = fork();
+	if( pid > 0)// parent process
+		exit(EXIT_SUCCESS);
+
+	chdir("/");
+	
+	for(int fd = sysconf(_SC_OPEN_MAX); fd > 0; fd--)
+		close(fd);
+	
+	fclose(stdin);
+	fclose(stdout);
+	fclose(stderr);
+
+	stdin = fopen("/dev/null", "r");
+	stdout = fopen("/dev/null", "w");
+	stderr = fopen("/dev/null", "w");
+}
+
+int main(int argc, char *argv[]){
+	
+	void *library;
+	void (*mysyslog)(const char*, int, int, int, const char*);
+
+
+	
+	library = dlopen(LIBRARY, RTLD_LAZY | RTLD_GLOBAL);
+	if(library == NULL){
+		fprintf(stderr, "%s\n", dlerror());
+		exit(EXIT_FAILURE);
+	}
+	dlerror();
+
+	mysyslog = dlsym(library, LOG_FUNC);
+	if(mysyslog == NULL){
+		fprintf(stderr, "%s\n", dlerror());
+		exit(EXIT_FAILURE);
+	}
+	dlerror();
+
+	daemonize();
+	while(1){
+		//mysyslog(args[0], *(int*) args[1], *(int*) args[2], *(int*) args[3], args[4]);
+	}
+
+	if(dlclose(library) != 0){
+		fprintf(stderr, "%s\n", dlerror());
+		exit(EXIT_FAILURE);
+	}
+	exit(EXIT_SUCCESS);
 }
