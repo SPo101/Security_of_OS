@@ -16,6 +16,7 @@ int mysyslog(const char* msg, int level, int driver, int format, const char* pat
 #include <getopt.h>
 #include <dlfcn.h>
 #include <stddef.h>
+#include <signal.h>
 
 
 #define LIBRARY "libmysyslog.so"
@@ -74,6 +75,9 @@ int main(int argc, char *argv[]){
 	dlerror();
 
 	daemonize();
+	//signal(SIGINT, interrupt_handler);
+	//signal(SIGTERM, terminate_handler):
+	//signal(SIGINFO, info_handler):
 	while(1){
 		//mysyslog(args[0], *(int*) args[1], *(int*) args[2], *(int*) args[3], args[4]);
 	}
