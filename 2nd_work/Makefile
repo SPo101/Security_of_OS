@@ -1,5 +1,5 @@
 client = mysyslog-client.c
-library = libmysyslog.c
+library = Libmysyslog/libmysyslog.c
 version = 1.0
 revision = 1
 architecture = all
@@ -8,7 +8,7 @@ all: mysyslog_lib | deb_client
 	@cc $(client) -o log_client
 
 mysyslog_lib:
-	@cc libmysyslog.c -shared -o libmysyslog.so
+	@cc Libmysyslog/libmysyslog.c -shared -o Libmysyslog/libmysyslog.so
 
 deb_client: $(client)
 	@mkdir MySyslog_client_${version}-${revision}_${architecture}
@@ -28,5 +28,5 @@ deb_daemon:
 deb_lib:
 
 clean:
-	@rm -f libmysyslog.so log_client
+	@rm -f Libmysyslog/libmysyslog.so log_client
 	@rm -fr MySyslog_client_${version}-${revision}_${architecture}*

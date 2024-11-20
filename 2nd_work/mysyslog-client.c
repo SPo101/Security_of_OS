@@ -18,7 +18,7 @@ int mysyslog(const char* msg, int level, int driver, int format, const char* pat
 
 
 #define CNT_OPTIONS 5
-#define LIBRARY "libmysyslog.so"
+#define LIBRARY "Libmysyslog/libmysyslog.so"
 #define LOG_FUNC "mysyslog"
 
 static struct option Long_options[] = {
@@ -35,9 +35,9 @@ void Usage(){
 	printf("\tuse all of options:\n");
 	printf("-m --message Message to log\n");
 	printf("-l --level   Level of importance\n");
-	printf("-d --driver  \n");
-	printf("-f --format  \n");
-	printf("-p --path    \n");
+	printf("-d --driver  0-text driver 1-json driver\n");
+	printf("-f --format  Format\n");
+	printf("-p --path    File to log\n");
 }
 	
 int check_args(char **args){

@@ -17,13 +17,58 @@ int mysyslog(const char* msg, int level, int driver, int format, const char* pat
 #include <dlfcn.h>
 #include <stddef.h>
 #include <signal.h>
+#include <time.h>
 
-
-#define LIBRARY "libmysyslog.so"
+#define LIBRARY "Libmysyslog/libmysyslog.so"
 #define LOG_FUNC "mysyslog"
 #define CONFIG "/etc/mysyslog/mysyslog.cfg"
 
+void daemonize();	
+void interrupt_handler();
+void terminate_handler();
+void info_handler();
+
+int main(int argc, char *argv[]){
 	
+	void *library;
+	void (*mysyslog)(const char*, int, int, int, const char*);
+
+
+	
+	library = dlopen(LIBRARY, RTLD_LAZY | RTLD_GLOBAL);
+	if(library == NULL){
+		fprintf(stderr, "%s\n", dlerror());
+		exit(EXIT_FAILURE);
+	}
+	dlerror();
+
+	mysyslog = dlsym(library, LOG_FUNC);
+	if(mysyslog == NULL){
+		fprintf(stderr, "%s\n", dlerror());
+		exit(EXIT_FAILURE);
+	}
+	dlerror();
+
+	daemonize();
+	//signal(SIGINT, interrupt_handler);
+	//signal(SIGTERM, terminate_handler):
+	//signal(SIGINFO, info_handler):
+	time_t sec;
+	while(1){
+		sec = time(NULL);
+		if(sec % (10 * 60) == 0)
+			//mysyslog(args[0], *(int*) args[1], *(int*) args[2], *(int*) args[3], args[4]);
+			sleep(1);
+	}
+
+	if(dlclose(library) != 0){
+		fprintf(stderr, "%s\n", dlerror());
+		exit(EXIT_FAILURE);
+	}
+	exit(EXIT_SUCCESS);
+}
+
+
 void daemonize(){
 	pid_t pid = fork();
 
@@ -51,40 +96,4 @@ void daemonize(){
 	stdin = fopen("/dev/null", "r");
 	stdout = fopen("/dev/null", "w");
 	stderr = fopen("/dev/null", "w");
-}
-
-int main(int argc, char *argv[]){
-	
-	void *library;
-	void (*mysyslog)(const char*, int, int, int, const char*);
-
-
-	
-	library = dlopen(LIBRARY, RTLD_LAZY | RTLD_GLOBAL);
-	if(library == NULL){
-		fprintf(stderr, "%s\n", dlerror());
-		exit(EXIT_FAILURE);
-	}
-	dlerror();
-
-	mysyslog = dlsym(library, LOG_FUNC);
-	if(mysyslog == NULL){
-		fprintf(stderr, "%s\n", dlerror());
-		exit(EXIT_FAILURE);
-	}
-	dlerror();
-
-	daemonize();
-	//signal(SIGINT, interrupt_handler);
-	//signal(SIGTERM, terminate_handler):
-	//signal(SIGINFO, info_handler):
-	while(1){
-		//mysyslog(args[0], *(int*) args[1], *(int*) args[2], *(int*) args[3], args[4]);
-	}
-
-	if(dlclose(library) != 0){
-		fprintf(stderr, "%s\n", dlerror());
-		exit(EXIT_FAILURE);
-	}
-	exit(EXIT_SUCCESS);
 }
