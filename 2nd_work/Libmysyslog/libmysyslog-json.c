@@ -4,9 +4,6 @@ structure of json log file
 {"timestamp": ..., "log_level": ..., "process": ..., "message": ...}
 {	      int, 		str, 		str, 		str}
 
-
-int mysyslog(const char* msg, int level, int driver, int format, const char* path);
-
 */
 #include "yyjson.c"
 #include <stdio.h>

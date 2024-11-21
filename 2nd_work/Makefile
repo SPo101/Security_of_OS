@@ -9,6 +9,8 @@ all: mysyslog_lib | deb_client
 
 mysyslog_lib:
 	@cc Libmysyslog/libmysyslog.c -shared -o Libmysyslog/libmysyslog.so
+	@cc Libmysyslog/libmysyslog-text.c -shared -o Libmysyslog/libmysyslog-text.so
+	@cc Libmysyslog/libmysyslog-json.c -shared -o Libmysyslog/libmysyslog-json.so
 
 deb_client: $(client)
 	@mkdir MySyslog_client_${version}-${revision}_${architecture}
@@ -29,4 +31,5 @@ deb_lib:
 
 clean:
 	@rm -f Libmysyslog/libmysyslog.so log_client
+	@rm -f Libmysyslog/libmysyslog-text.so Libmysyslog/libmysyslog-json.so
 	@rm -fr MySyslog_client_${version}-${revision}_${architecture}*

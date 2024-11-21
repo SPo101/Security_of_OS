@@ -13,6 +13,8 @@ levels - DEBUG, INFO, WARN, ERROR, CRITICAL
 #include <fcntl.h>
 #include <time.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 int mysyslog(const char *msg, int level, int driver, int format, const char* path){
 	if(strcmp(path, "default") == 0){
@@ -66,7 +68,8 @@ int mysyslog(const char *msg, int level, int driver, int format, const char* pat
 			close(fd);
 			break;
 		}
-		write(fd, msg, 1024);
+		write(fd, msg, strlen(msg));
+		write(fd, "\n", 1);
 		close(fd);
 	}
 	return 0;

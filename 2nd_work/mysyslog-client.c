@@ -106,7 +106,7 @@ int main(int argc, char *argv[]){
 	}
 	dlerror();
 
-	mysyslog(args[0], *(int*) args[1], *(int*) args[2], *(int*) args[3], args[4]);
+	mysyslog(args[0], atoi(args[1]), atoi(args[2]), atoi(args[3]), args[4]);
 
 	if(dlclose(library) != 0){
 		fprintf(stderr, "%s\n", dlerror());
