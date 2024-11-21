@@ -27,6 +27,7 @@ void daemonize();
 void interrupt_handler();
 void terminate_handler();
 void info_handler();
+void read_config();
 
 int main(int argc, char *argv[]){
 	
@@ -50,9 +51,9 @@ int main(int argc, char *argv[]){
 	dlerror();
 
 	daemonize();
-	//signal(SIGINT, interrupt_handler);
-	//signal(SIGTERM, terminate_handler):
-	//signal(SIGINFO, info_handler):
+	signal(SIGINT, interrupt_handler);
+	signal(SIGTERM, terminate_handler):
+	signal(SIGINFO, info_handler):
 	time_t sec;
 	while(1){
 		sec = time(NULL);
@@ -68,6 +69,19 @@ int main(int argc, char *argv[]){
 	exit(EXIT_SUCCESS);
 }
 
+void interrupt_handler(){
+	exit(EXIT_SUCCESS);
+}
+void terminate_handler(){
+	exit(EXIT_FAILURE);
+}
+void info_handler(){
+	printf("Message: %s\n", args[0]);
+	printf("Level: %d\n", args[1]);
+	printf("Driver: %d\n", args[2]);
+	printf("Format: %d\n", args[3]);
+	printf("Path: %s\n", args[4]);
+}
 
 void daemonize(){
 	pid_t pid = fork();

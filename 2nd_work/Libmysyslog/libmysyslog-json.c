@@ -1,109 +1,64 @@
+/*
+
+structure of json log file
+{"timestamp": ..., "log_level": ..., "process": ..., "message": ...}
+{	      int, 		str, 		str, 		str}
+
+
+int mysyslog(const char* msg, int level, int driver, int format, const char* path);
+
+*/
+#include "yyjson.c"
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "cJSON.c"
+#include <unistd.h>
+#include <fcntl.h>
+#include <time.h>
+
+int mysyslog(const char* msg, int level, int driver, int format, const char* path){
+
+	if(strcmp(path, "default") == 0)
+		path = "/var/log/syslog";
+
+	int fd = open(path, O_WRONLY|O_CREAT|O_APPEND, S_IWUSR|S_IRUSR|S_IRGRP|S_IROTH);
+
+	yyjson_mut_doc *doc = yyjson_mut_doc_new(NULL);
+	yyjson_mut_val *root = yyjson_mut_obj(doc);
+	yyjson_mut_doc_set_root(doc, root);
+
+	yyjson_mut_obj_add_int(doc, root, "timestamp", time(NULL));
+	switch(level){
+	case 1:
+		yyjson_mut_obj_add_str(doc, root, "log_level", "DEBUG");
+		break;
+	case 2:
+		yyjson_mut_obj_add_str(doc, root, "log_level", "INFO");
+		break;
+	case 3:
+		yyjson_mut_obj_add_str(doc, root, "log_level", "WARINNG");
+		break;
+	case 4:
+		yyjson_mut_obj_add_str(doc, root, "log_level", "ERROR");
+		break;
+	case 5:
+		yyjson_mut_obj_add_str(doc, root, "log_level", "CRITICAL");
+		break;
+	default: 
+		break;
+	}
+
+	yyjson_mut_obj_add_str(doc, root, "process", "My_syslog");
+	yyjson_mut_obj_add_str(doc, root, "message", msg);
 
 
-/* Create a bunch of objects as demonstration. */
-static int print_preallocated(cJSON *root)
-{
-    /* declarations */
-    char *out = NULL;
-    char *buf = NULL;
-    char *buf_fail = NULL;
-    size_t len = 0;
-    size_t len_fail = 0;
+	const char *json = yyjson_mut_write(doc, 0, NULL);
 
-    /* formatted print */
-    out = cJSON_Print(root);
+	if (json) {
+		write(fd, json, 1024);
+		write(fd, "\n", 1);
+		free((void *)json);
+	}
 
-    /* create buffer to succeed */
-    /* the extra 5 bytes are because of inaccuracies when reserving memory */
-    len = strlen(out) + 5;
-    buf = (char*)malloc(len);
-    if (buf == NULL)
-    {
-        printf("Failed to allocate memory.\n");
-        exit(1);
-    }
-
-    /* create buffer to fail */
-    len_fail = strlen(out);
-    buf_fail = (char*)malloc(len_fail);
-    if (buf_fail == NULL)
-    {
-        printf("Failed to allocate memory.\n");
-        exit(1);
-    }
-
-    /* Print to buffer */
-    if (!cJSON_PrintPreallocated(root, buf, (int)len, 1)) {
-        printf("cJSON_PrintPreallocated failed!\n");
-        if (strcmp(out, buf) != 0) {
-            printf("cJSON_PrintPreallocated not the same as cJSON_Print!\n");
-            printf("cJSON_Print result:\n%s\n", out);
-            printf("cJSON_PrintPreallocated result:\n%s\n", buf);
-        }
-        free(out);
-        free(buf_fail);
-        free(buf);
-        return -1;
-    }
-
-    /* success */
-    printf("%s\n", buf);
-
-    /* force it to fail */
-    if (cJSON_PrintPreallocated(root, buf_fail, (int)len_fail, 1)) {
-        printf("cJSON_PrintPreallocated failed to show error with insufficient memory!\n");
-        printf("cJSON_Print result:\n%s\n", out);
-        printf("cJSON_PrintPreallocated result:\n%s\n", buf_fail);
-        free(out);
-        free(buf_fail);
-        free(buf);
-        return -1;
-    }
-
-    free(out);
-    free(buf_fail);
-    free(buf);
-    return 0;
-}
-
-/* Create a bunch of objects as demonstration. */
-static void create_objects(void)
-{
-    /* declare a few. */
-    cJSON *root = NULL;
-    cJSON *fmt = NULL;
-
-
-    /* Our "Video" datatype: */
-    root = cJSON_CreateObject();
-    cJSON_AddItemToObject(root, "name", cJSON_CreateString("Jack (\"Bee\") Nimble"));
-    cJSON_AddItemToObject(root, "format", fmt = cJSON_CreateObject());
-    cJSON_AddStringToObject(fmt, "type", "rect");
-    cJSON_AddNumberToObject(fmt, "width", 1920);
-    cJSON_AddNumberToObject(fmt, "height", 1080);
-    cJSON_AddFalseToObject (fmt, "interlace");
-    cJSON_AddNumberToObject(fmt, "frame rate", 24);
-
-    /* Print to text */
-    if (print_preallocated(root) != 0) {
-        cJSON_Delete(root);
-        exit(EXIT_FAILURE);
-    }
-    cJSON_Delete(root);
-
-}
-
-int main(void)
-{
-    /* print the version */
-    printf("Version: %s\n", cJSON_Version());
-
-    /* Now some samplecode for building objects concisely: */
-    create_objects();
-
-    return 0;
+	yyjson_mut_doc_free(doc);
+	close(fd);
+	return 0;
 }

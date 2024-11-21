@@ -34,10 +34,10 @@ void Usage(){
 	printf("Usage\n");
 	printf("\tuse all of options:\n");
 	printf("-m --message Message to log\n");
-	printf("-l --level   Level of importance\n");
-	printf("-d --driver  0-text driver 1-json driver\n");
+	printf("-l --level   Level of importance: 1-DEBUG 2-INFO 3-WARN 4-ERR 5-CRIT\n");
+	printf("-d --driver  Driver: 0-text 1-json\n");
 	printf("-f --format  Format\n");
-	printf("-p --path    File to log\n");
+	printf("-p --path    File to log or 'default'\n");
 }
 	
 int check_args(char **args){
