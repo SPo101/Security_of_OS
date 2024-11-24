@@ -9,7 +9,8 @@ To use log_client you need to give it all options which it requires. You can rea
 Log_daemon requires config file on path `/etc/mysyslog/mysyslog.cnf`
 
 Example of config file:<br/>
-```MESSAGE=here you write your message
+```
+MESSAGE=here you write your message
 LEVEL=2
 DRIVER=1
 FORMAT=1
