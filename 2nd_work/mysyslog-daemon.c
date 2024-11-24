@@ -11,6 +11,7 @@ int mysyslog(const char* msg, int level, int driver, int format, const char* pat
 
 
 */
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
@@ -65,7 +66,7 @@ int main(int argc, char *argv[]){
 	time_t sec;
 	while(1){
 		sec = time(NULL);
-		if(sec % (10 * 60) == 0)
+		if(sec % (10 * 1) == 0)
 			mysyslog(args[0], atoi(args[1]), atoi(args[2]), atoi(args[3]), args[4]);
 			sleep(1);
 	}
