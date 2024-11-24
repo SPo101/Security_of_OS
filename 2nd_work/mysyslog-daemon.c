@@ -30,12 +30,13 @@ void daemonize();
 void interrupt_handler();
 void terminate_handler();
 void info_handler();
-void read_config();
+int read_config();
 
-char **args;
+char *args[CNT_OPTIONS];
 
 int main(int argc, char *argv[]){
 	
+	daemonize();
 	void *library;
 	void (*mysyslog)(const char*, int, int, int, const char*);
 	
@@ -53,8 +54,10 @@ int main(int argc, char *argv[]){
 	}
 	dlerror();
 
-	daemonize();
-	read_config();
+	if(read_config()){
+		fprintf(stderr, "Error while reading config file\n");
+		exit(EXIT_FAILURE);
+	}
 	signal(SIGINT, interrupt_handler);
 	signal(SIGTERM, terminate_handler);
 	signal(SIGINFO, info_handler);
@@ -74,7 +77,7 @@ int main(int argc, char *argv[]){
 	exit(EXIT_SUCCESS);
 }
 
-void read_config(){
+int read_config(){
 	int fd = open(CONFIG, O_RDONLY);
 
 	int offset = lseek(fd, 0, SEEK_END);
@@ -85,7 +88,7 @@ void read_config(){
 
 	size_t place_eq = 0;
 	size_t place_end = 0;
-	for(int i=0; i<5; i++){
+	for(int i=0; i<CNT_OPTIONS; i++){
 		place_eq += (1 + strcspn(string+place_eq, "="));
 		place_end += 1 + strcspn(string+place_end, "\n");
 
@@ -95,6 +98,7 @@ void read_config(){
 
 	free(string);
 	close(fd);
+	return 0;
 }
 
 void interrupt_handler(){

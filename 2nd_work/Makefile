@@ -32,6 +32,7 @@ deb_daemon:
 deb_lib:
 
 clean:
-	@rm -f Libmysyslog/libmysyslog.so log_client
+	@rm -f a.out
+	@rm -f Libmysyslog/libmysyslog.so log_client log_daemon
 	@rm -f Libmysyslog/libmysyslog-text.so Libmysyslog/libmysyslog-json.so
 	@rm -fr MySyslog_client_${version}-${revision}_${architecture}*
