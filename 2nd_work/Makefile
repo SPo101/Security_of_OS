@@ -15,6 +15,9 @@ mysyslog_lib:
 	@cc Libmysyslog/libmysyslog-json.c -shared -o Libmysyslog/libmysyslog-json.so
 
 deb: deb_client deb_daemon deb_lib
+	@rm -fr MySyslog_client_${version}-${revision}_${architecture}
+	@rm -fr MySyslog_daemon_${version}-${revision}_${architecture}
+	@rm -fr MySyslog_library_${version}-${revision}_${architecture}
 
 deb_client: $(client)
 	@mkdir MySyslog_client_${version}-${revision}_${architecture}
