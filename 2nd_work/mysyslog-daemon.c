@@ -15,10 +15,13 @@ int mysyslog(const char* msg, int level, int driver, int format, const char* pat
 #include <stdlib.h>
 #include <getopt.h>
 #include <dlfcn.h>
+#include <fcntl.h>
 #include <stddef.h>
+#include <string.h>
 #include <signal.h>
 #include <time.h>
 
+#define CNT_OPTIONS 5
 #define LIBRARY "Libmysyslog/libmysyslog.so"
 #define LOG_FUNC "mysyslog"
 #define CONFIG "/etc/mysyslog/mysyslog.cfg"
@@ -29,12 +32,12 @@ void terminate_handler();
 void info_handler();
 void read_config();
 
+char **args;
+
 int main(int argc, char *argv[]){
 	
 	void *library;
 	void (*mysyslog)(const char*, int, int, int, const char*);
-
-
 	
 	library = dlopen(LIBRARY, RTLD_LAZY | RTLD_GLOBAL);
 	if(library == NULL){
@@ -51,14 +54,16 @@ int main(int argc, char *argv[]){
 	dlerror();
 
 	daemonize();
+	read_config();
 	signal(SIGINT, interrupt_handler);
-	signal(SIGTERM, terminate_handler):
-	signal(SIGINFO, info_handler):
+	signal(SIGTERM, terminate_handler);
+	signal(SIGINFO, info_handler);
+
 	time_t sec;
 	while(1){
 		sec = time(NULL);
 		if(sec % (10 * 60) == 0)
-			//mysyslog(args[0], *(int*) args[1], *(int*) args[2], *(int*) args[3], args[4]);
+			mysyslog(args[0], atoi(args[1]), atoi(args[2]), atoi(args[3]), args[4]);
 			sleep(1);
 	}
 
@@ -69,6 +74,29 @@ int main(int argc, char *argv[]){
 	exit(EXIT_SUCCESS);
 }
 
+void read_config(){
+	int fd = open(CONFIG, O_RDONLY);
+
+	int offset = lseek(fd, 0, SEEK_END);
+	lseek(fd, 0, SEEK_SET);
+	
+	char *string = malloc(offset);
+	read(fd, string, offset);
+
+	size_t place_eq = 0;
+	size_t place_end = 0;
+	for(int i=0; i<5; i++){
+		place_eq += (1 + strcspn(string+place_eq, "="));
+		place_end += 1 + strcspn(string+place_end, "\n");
+
+		args[i] = malloc(place_end-place_eq);
+		memcpy(args[i], string+place_eq, place_end - place_eq -1);
+	}
+
+	free(string);
+	close(fd);
+}
+
 void interrupt_handler(){
 	exit(EXIT_SUCCESS);
 }
@@ -77,9 +105,9 @@ void terminate_handler(){
 }
 void info_handler(){
 	printf("Message: %s\n", args[0]);
-	printf("Level: %d\n", args[1]);
-	printf("Driver: %d\n", args[2]);
-	printf("Format: %d\n", args[3]);
+	printf("Level: %d\n", atoi(args[1]));
+	printf("Driver: %d\n", atoi(args[2]));
+	printf("Format: %d\n", atoi(args[3]));
 	printf("Path: %s\n", args[4]);
 }
 

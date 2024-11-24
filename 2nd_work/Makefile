@@ -1,4 +1,5 @@
 client = mysyslog-client.c
+daemon = mysyslog-daemon.c
 library = Libmysyslog/libmysyslog.c
 version = 1.0
 revision = 1
@@ -6,6 +7,7 @@ architecture = all
 
 all: mysyslog_lib | deb_client
 	@cc $(client) -o log_client
+	@cc $(daemon) -o log_daemon
 
 mysyslog_lib:
 	@cc Libmysyslog/libmysyslog.c -shared -o Libmysyslog/libmysyslog.so
