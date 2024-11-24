@@ -17,4 +17,4 @@ FORMAT=1
 PATH=./path/to/file.txt
 ```
 
-See `Libmysyslog/README.md` for better understanding of options
+See `Libmysyslog/README.md` for better understanding options
