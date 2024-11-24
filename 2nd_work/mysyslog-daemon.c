@@ -11,16 +11,16 @@ int mysyslog(const char* msg, int level, int driver, int format, const char* pat
 
 
 */
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <getopt.h>
 #include <dlfcn.h>
 #include <fcntl.h>
+#include <getopt.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
-#include <signal.h>
 #include <time.h>
+#include <unistd.h>
 
 #define CNT_OPTIONS 5
 #define LIBRARY "Libmysyslog/libmysyslog.so"
