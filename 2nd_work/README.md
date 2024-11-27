@@ -1,7 +1,7 @@
 ### Client and daemon apps which use mysyslog library
 
-Use `make` to build a project.<br/>
-Use `make clean` to go back to source state.<br/>
+Use `sudo make` to build a project.<br/>
+Use `sudo make clean` to go back to source state.<br/>
 
 After building a project you will get 2 executables files: log_client, log_daemon; 3 deb packages;
 

@@ -12,6 +12,15 @@ all: mysyslog_lib deb
 	@cc $(client) -o log_client
 	@cc $(daemon) -o log_daemon
 	@echo "\n\nRun 'make systemd_unit_file' to create unit file for systemd service\n"
+	@echo "Run 'make astra_repo' to create a local apt repository\n"
+
+astra_repo:
+	@mkdir -p /usr/local/repos
+	@cp *.deb /usr/local/repos
+	@dpkg-scanpackages /usr/local/repos /dev/null | gzip -9c > /usr/local/repos/Packages.gz
+	@echo "deb [trusted=yes] file:/usr/local/repos ./" > /etc/apt/sources.list.d/Mysyslog.list
+	@sudo apt-get update
+	@sudo apt-get install Mysyslog
 
 systemd_unit_file:
 	@touch $(UNIT_FILE) 
