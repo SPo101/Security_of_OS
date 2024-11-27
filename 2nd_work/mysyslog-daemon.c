@@ -26,6 +26,7 @@ int mysyslog(const char* msg, int level, int driver, int format, const char* pat
 #define LIBRARY "Libmysyslog/libmysyslog.so"
 #define LOG_FUNC "mysyslog"
 #define CONFIG "/etc/mysyslog/mysyslog.cfg"
+#define PIDFile "/usr/run/mysyslog-daemon.pid"
 
 void daemonize();	
 void interrupt_handler();
@@ -130,6 +131,10 @@ void daemonize(){
 	pid = fork();
 	if( pid > 0)// parent process
 		exit(EXIT_SUCCESS);
+
+	int fd = open(fd, O_WRONLY|O_CREAT);
+	dprintf("%d\n", pid);
+	close(fd);
 
 	chdir("/");
 	

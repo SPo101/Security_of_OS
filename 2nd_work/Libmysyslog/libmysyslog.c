@@ -9,16 +9,14 @@
 
 #define FUNC "mysyslog"
 
+char *DRIVERS[] = {TEXT, JSON};
+
 int mysyslog(const char *msg, int level, int driver, int format, const char* path){
 	
 	void *library;
 	void (*log_func)(const char*, int, int, int, const char*);
-
-	if(driver)
-		library = dlopen(JSON, RTLD_LAZY|RTLD_GLOBAL);
-	else
-		library = dlopen(TEXT, RTLD_LAZY|RTLD_GLOBAL);
-
+	
+	library = dlopen(DRIVERS[driver], RTLD_LAZY|RTLD_GLOBAL);
 	if(library == NULL){
 		fprintf(stderr, "Opening lib: %s", dlerror());
 		return 1;
