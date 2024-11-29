@@ -1,16 +1,3 @@
-/*
-Сделать тестовое приложение демон mysyslog-daemon, 
-который автоматически запускается во время старта компьютера 
-и постоянно выводит в лог данные с разным уровнем. 
-Приложение настраивается при помощи конфигурационного файла /etc/mysyslog/mysyslog.cfg. 
-В конфигурационном файле задается: путь, формат и драйвер. 
-Демон должен корректно обрабатывать получаемые сигналы 
-и должен запускаться и останавливаться через systemctl.
-
-int mysyslog(const char* msg, int level, int driver, int format, const char* path);
-
-
-*/
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <getopt.h>
@@ -21,6 +8,7 @@ int mysyslog(const char* msg, int level, int driver, int format, const char* pat
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <stdint.h>
 
 #define CNT_OPTIONS 5
 #define LIBRARY "Libmysyslog/libmysyslog.so"
@@ -132,8 +120,8 @@ void daemonize(){
 	if( pid > 0)// parent process
 		exit(EXIT_SUCCESS);
 
-	int fd = open(fd, O_WRONLY|O_CREAT);
-	dprintf("%d\n", pid);
+	int fd = open(PIDFile, O_WRONLY|O_CREAT);
+	dprintf(fd, "%d\n", pid);
 	close(fd);
 
 	chdir("/");

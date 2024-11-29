@@ -12,11 +12,14 @@
 char *DRIVERS[] = {TEXT, JSON};
 
 int mysyslog(const char *msg, int level, int driver, int format, const char* path){
+
+	if(msg == NULL || path == NULL)
+		return 1;
 	
 	void *library;
 	void (*log_func)(const char*, int, int, int, const char*);
 	
-	library = dlopen(DRIVERS[driver], RTLD_LAZY|RTLD_GLOBAL);
+	library = dlopen(DRIVERS[driver], RTLD_LAZY|RTLD_LOCAL);
 	if(library == NULL){
 		fprintf(stderr, "Opening lib: %s", dlerror());
 		return 1;

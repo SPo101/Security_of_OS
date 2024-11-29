@@ -1,15 +1,3 @@
-/*
-Сделать тестовое приложение на языке Си mysyslog-client, 
-которое использует библиотеку libmysyslog 
-и позволяет в аргументах командной строки задавать выводимый через библиотеку libmysyslog текст, 
-уровень записи журнала, используемый драйвер и формат и путь к файлу. 
-Аргументы командной строки обрабатывать через getopt.
-
-
-int mysyslog(const char* msg, int level, int driver, int format, const char* path);
-
-
-*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
@@ -22,11 +10,11 @@ int mysyslog(const char* msg, int level, int driver, int format, const char* pat
 #define LOG_FUNC "mysyslog"
 
 static struct option Long_options[] = {
-	{"message", 	required_argument, 0, 0},
-	{"level", 	required_argument, 0, 0},
-	{"driver",  	required_argument, 0, 0},
-	{"format", 	required_argument, 0, 0},
-	{"path", 	required_argument, 0, 0}
+	{"message", 	required_argument, 0, 'm'},
+	{"level", 	required_argument, 0, 'l'},
+	{"driver",  	required_argument, 0, 'd'},
+	{"format", 	required_argument, 0, 'f'},
+	{"path", 	required_argument, 0, 'p'}
 };
 static char *Short_options = "m:l:d:f:p:";	//msg | lvl | driv | form | path
 
@@ -49,8 +37,11 @@ int check_args(char **args){
 
 int main(int argc, char *argv[]){
 	
-	if(argc < 2)
+	if(argc < 2){
 		Usage();
+		fprintf(stderr, "Not all parameters were given\n");
+		exit(EXIT_FAILURE);
+	}
 
 	int Option = 0; 
 	int Option_index = 0;
@@ -64,9 +55,6 @@ int main(int argc, char *argv[]){
 			break;
 		
 		switch(Option){
-			case 0:
-				args[Option_index] = optarg;
-				break;
 			case 'm':
 				args[0] = optarg;
 				break;

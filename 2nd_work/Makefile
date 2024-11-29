@@ -11,7 +11,7 @@ architecture = all
 all: mysyslog_lib deb
 	@cc $(client) -o log_client
 	@cc $(daemon) -o log_daemon
-	@echo "\n\nRun 'make systemd_unit_file' to create unit file for systemd service\n"
+	@echo "\n\nRun 'make systemd_unit_file' to create unit file for systemd service"
 	@echo "Run 'make astra_repo' to create a local apt repository\n"
 
 astra_repo:
