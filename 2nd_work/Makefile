@@ -9,8 +9,10 @@ revision = 1
 architecture = all
 
 all: mysyslog_lib deb
-	@cc $(client) -o log_client
-	@cc $(daemon) -o log_daemon
+	@cc $(client) $(daemon) -c
+	@cc mysyslog-client.o Libmysyslog/libmysyslog.o -o log_client
+	@cc mysyslog-daemon.o Libmysyslog/libmysyslog.o -o log_daemon
+
 	@echo "\n\nRun 'make systemd_unit_file' to create unit file for systemd service"
 	@echo "Run 'make astra_repo' to create a local apt repository\n"
 
@@ -35,7 +37,7 @@ systemd_unit_file:
 	@echo "WantedBy=multi-user.target"			  >> $(UNIT_FILE)
 
 mysyslog_lib:
-	@cc Libmysyslog/libmysyslog.c -shared -o Libmysyslog/libmysyslog.so
+	@cc Libmysyslog/libmysyslog.c -c -o Libmysyslog/libmysyslog.o
 	@cc Libmysyslog/libmysyslog-text.c -shared -o Libmysyslog/libmysyslog-text.so
 	@cc Libmysyslog/libmysyslog-json.c -shared -o Libmysyslog/libmysyslog-json.so
 
@@ -70,7 +72,7 @@ deb_daemon:
 	@echo "Description: Daemon app which uses mysysloglib library for logging" >> MySyslog_daemon_${version}-${revision}_${architecture}/DEBIAN/control
 
 	@mkdir -p MySyslog_daemon_${version}-${revision}_${architecture}/{usr/Libmysyslog,etc/systemd/system}
-	@cp $(client) MySyslog_daemon_${version}-${revision}_${architecture}/usr
+	@cp $(daemon) MySyslog_daemon_${version}-${revision}_${architecture}/usr
 	@cp $(library) MySyslog_daemon_${version}-${revision}_${architecture}/usr/Libmysyslog
 
 	@touch MySyslog_daemon_${version}-${revision}_${architecture}/$(UNIT_FILE) 
@@ -97,11 +99,11 @@ deb_lib:
 	@echo "Description: Mysyslog library for logging" >> MySyslog_library_${version}-${revision}_${architecture}/DEBIAN/control
 
 	@mkdir -p MySyslog_library_${version}-${revision}_${architecture}/usr/Libmysyslog
-	@cp $(client) MySyslog_library_${version}-${revision}_${architecture}/usr
 	@cp $(library) MySyslog_library_${version}-${revision}_${architecture}/usr/Libmysyslog
 	@dpkg-deb --root-owner-group --build MySyslog_library_${version}-${revision}_${architecture}
 
 clean:
+	@rm -f Libmysyslog/*.o *.o
 	@rm -f Libmysyslog/libmysyslog.so log_client log_daemon
 	@rm -f Libmysyslog/libmysyslog-text.so Libmysyslog/libmysyslog-json.so
 	@rm -fr MySyslog_client_${version}-${revision}_${architecture}*

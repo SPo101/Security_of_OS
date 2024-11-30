@@ -11,8 +11,6 @@
 #include <stdint.h>
 
 #define CNT_OPTIONS 5
-#define LIBRARY "Libmysyslog/libmysyslog.so"
-#define LOG_FUNC "mysyslog"
 #define CONFIG "/etc/mysyslog/mysyslog.cfg"
 #define PIDFile "/usr/run/mysyslog-daemon.pid"
 
@@ -21,29 +19,13 @@ void interrupt_handler();
 void terminate_handler();
 void info_handler();
 int read_config();
+int mysyslog(const char *msg, int level, int driver, int format, const char *path);
 
 char *args[CNT_OPTIONS];
 
 int main(int argc, char *argv[]){
-	
 	daemonize();
-	void *library;
-	void (*mysyslog)(const char*, int, int, int, const char*);
 	
-	library = dlopen(LIBRARY, RTLD_LAZY | RTLD_GLOBAL);
-	if(library == NULL){
-		fprintf(stderr, "%s\n", dlerror());
-		exit(EXIT_FAILURE);
-	}
-	dlerror();
-
-	mysyslog = dlsym(library, LOG_FUNC);
-	if(mysyslog == NULL){
-		fprintf(stderr, "%s\n", dlerror());
-		exit(EXIT_FAILURE);
-	}
-	dlerror();
-
 	if(read_config()){
 		fprintf(stderr, "Error while reading config file\n");
 		exit(EXIT_FAILURE);
@@ -60,10 +42,6 @@ int main(int argc, char *argv[]){
 			sleep(1);
 	}
 
-	if(dlclose(library) != 0){
-		fprintf(stderr, "%s\n", dlerror());
-		exit(EXIT_FAILURE);
-	}
 	exit(EXIT_SUCCESS);
 }
 
