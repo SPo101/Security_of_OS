@@ -2,19 +2,37 @@ client = mysyslog-client.c
 daemon = mysyslog-daemon.c
 library = Libmysyslog/*
 
+APPS = mysyslog-client.c mysyslog-daemon.c Libmysyslog/libmysyslog.c
 UNIT_FILE = /etc/systemd/system/mysyslog-daemon.service
 
 version = 1.0
 revision = 1
 architecture = all
 
+define DEB_create
+	@mkdir -p MySyslog_$(1)_${version}-${revision}_${architecture}/DEBIAN
+	@touch MySyslog_$(1)_${version}-${revision}_${architecture}/DEBIAN/control
+
+	@echo "Package: mysyslog-$(1)" 			>> MySyslog_$(1)_${version}-${revision}_${architecture}/DEBIAN/control
+	@echo "Version: $(version)" 			>> MySyslog_$(1)_${version}-${revision}_${architecture}/DEBIAN/control
+	@echo "Architecture: $(architecture)"	        >> MySyslog_$(1)_${version}-${revision}_${architecture}/DEBIAN/control
+	@echo "Maintainer: SPo101 <github.com/SPo101>"  >> MySyslog_$(1)_${version}-${revision}_${architecture}/DEBIAN/control
+	@echo "Description: $(1) app" 			>> MySyslog_$(1)_${version}-${revision}_${architecture}/DEBIAN/control
+
+	@mkdir -p MySyslog_$(1)_${version}-${revision}_${architecture}/usr/Libmysyslog
+	@cp $(client) MySyslog_$(1)_${version}-${revision}_${architecture}/usr
+	@cp $(library) MySyslog_$(1)_${version}-${revision}_${architecture}/usr/Libmysyslog
+	@dpkg-deb --root-owner-group --build MySyslog_$(1)_${version}-${revision}_${architecture}
+endef
+
 all: mysyslog_lib deb
-	@cc $(client) $(daemon) -c
-	@cc mysyslog-client.o Libmysyslog/libmysyslog.o -o log_client
-	@cc mysyslog-daemon.o Libmysyslog/libmysyslog.o -o log_daemon
+	@cc $(APPS) -c
+	@cc mysyslog-client.o libmysyslog.o -o log_client
+	@cc mysyslog-daemon.o libmysyslog.o -o log_daemon
 
 	@echo "\n\nRun 'make systemd_unit_file' to create unit file for systemd service"
 	@echo "Run 'make astra_repo' to create a local apt repository\n"
+
 
 astra_repo:
 	@mkdir -p /usr/local/repos
@@ -37,31 +55,16 @@ systemd_unit_file:
 	@echo "WantedBy=multi-user.target"			  >> $(UNIT_FILE)
 
 mysyslog_lib:
-	@cc Libmysyslog/libmysyslog.c -c -o Libmysyslog/libmysyslog.o
 	@cc Libmysyslog/libmysyslog-text.c -shared -o Libmysyslog/libmysyslog-text.so
 	@cc Libmysyslog/libmysyslog-json.c -shared -o Libmysyslog/libmysyslog-json.so
 
-deb: deb_client deb_daemon deb_lib
-	@rm -fr MySyslog_client_${version}-${revision}_${architecture}
-	@rm -fr MySyslog_daemon_${version}-${revision}_${architecture}
-	@rm -fr MySyslog_library_${version}-${revision}_${architecture}
+deb: deb_daemon 
+	$(call DEB_create,client)
+	$(call DEB_create,library)
 
-deb_client: $(client)
-	@mkdir -p MySyslog_client_${version}-${revision}_${architecture}/DEBIAN
-	@touch MySyslog_client_${version}-${revision}_${architecture}/DEBIAN/control
+	@rm -fr MySyslog_*_${version}-${revision}_${architecture}
 
-	@echo "Package: mysyslog-client" 					   >> MySyslog_client_${version}-${revision}_${architecture}/DEBIAN/control
-	@echo "Version: $(version)" 						   >> MySyslog_client_${version}-${revision}_${architecture}/DEBIAN/control
-	@echo "Architecture: $(architecture)" 					   >> MySyslog_client_${version}-${revision}_${architecture}/DEBIAN/control
-	@echo "Maintainer: SPo101 <github.com/SPo101>" 				   >> MySyslog_client_${version}-${revision}_${architecture}/DEBIAN/control
-	@echo "Description: Client app which uses mysysloglib library for logging" >> MySyslog_client_${version}-${revision}_${architecture}/DEBIAN/control
-
-	@mkdir -p MySyslog_client_${version}-${revision}_${architecture}/usr/Libmysyslog
-	@cp $(client) MySyslog_client_${version}-${revision}_${architecture}/usr
-	@cp $(library) MySyslog_client_${version}-${revision}_${architecture}/usr/Libmysyslog
-	@dpkg-deb --root-owner-group --build MySyslog_client_${version}-${revision}_${architecture}
-
-deb_daemon:
+deb_daemon: $(daemon)
 	@mkdir -p MySyslog_daemon_${version}-${revision}_${architecture}/DEBIAN
 	@touch MySyslog_daemon_${version}-${revision}_${architecture}/DEBIAN/control
 
@@ -88,24 +91,8 @@ deb_daemon:
 
 	@dpkg-deb --root-owner-group --build MySyslog_daemon_${version}-${revision}_${architecture}
 
-deb_lib:
-	@mkdir -p MySyslog_library_${version}-${revision}_${architecture}/DEBIAN
-	@touch MySyslog_library_${version}-${revision}_${architecture}/DEBIAN/control
-
-	@echo "Package: mysyslog-library" 		  >> MySyslog_library_${version}-${revision}_${architecture}/DEBIAN/control
-	@echo "Version: $(version)" 			  >> MySyslog_library_${version}-${revision}_${architecture}/DEBIAN/control
-	@echo "Architecture: $(architecture)"   	  >> MySyslog_library_${version}-${revision}_${architecture}/DEBIAN/control
-	@echo "Maintainer: SPo101 <github.com/SPo101>" 	  >> MySyslog_library_${version}-${revision}_${architecture}/DEBIAN/control
-	@echo "Description: Mysyslog library for logging" >> MySyslog_library_${version}-${revision}_${architecture}/DEBIAN/control
-
-	@mkdir -p MySyslog_library_${version}-${revision}_${architecture}/usr/Libmysyslog
-	@cp $(library) MySyslog_library_${version}-${revision}_${architecture}/usr/Libmysyslog
-	@dpkg-deb --root-owner-group --build MySyslog_library_${version}-${revision}_${architecture}
-
 clean:
 	@rm -f Libmysyslog/*.o *.o
 	@rm -f Libmysyslog/libmysyslog.so log_client log_daemon
 	@rm -f Libmysyslog/libmysyslog-text.so Libmysyslog/libmysyslog-json.so
-	@rm -fr MySyslog_client_${version}-${revision}_${architecture}*
-	@rm -fr MySyslog_daemon_${version}-${revision}_${architecture}*
-	@rm -fr MySyslog_library_${version}-${revision}_${architecture}*
+	@rm -fr MySyslog_*_${version}-${revision}_${architecture}*
