@@ -75,7 +75,7 @@ void Usage(){
 	printf("-l --level   Level of importance: 1-DEBUG 2-INFO 3-WARN 4-ERR 5-CRIT\n");
 	printf("-d --driver  Driver: 0-text 1-json\n");
 	printf("-f --format  Format\n");
-	printf("-p --path    File to log or 'default'\n");
+	printf("-p --path    File to log\n");
 }
 	
 int check_args(char **args){
